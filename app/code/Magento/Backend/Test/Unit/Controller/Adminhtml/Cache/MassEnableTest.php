@@ -59,6 +59,11 @@ class MassEnableTest extends \PHPUnit\Framework\TestCase
      */
     private $cacheStateMock;
 
+    /**
+     * @var CacheManager
+     */
+    protected $cacheManagerMock;
+
     protected function setUp()
     {
         $objectManagerHelper = new ObjectManagerHelper($this);
@@ -111,7 +116,7 @@ class MassEnableTest extends \PHPUnit\Framework\TestCase
             ->method('getRequest')
             ->willReturn($this->requestMock);
 
-        $cacheManagerMock = $this->getMockBuilder(CacheManager::class)
+        $this->cacheManagerMock = $this->getMockBuilder(CacheManager::class)
             ->disableOriginalConstructor()
             ->disableOriginalClone()
             ->getMock();
@@ -122,7 +127,7 @@ class MassEnableTest extends \PHPUnit\Framework\TestCase
                 'context' => $contextMock,
                 'cacheTypeList' => $this->cacheTypeListMock,
                 'cacheState' => $this->cacheStateMock,
-                'cacheManager' => $cacheManagerMock
+                'cacheManager' => $this->cacheManagerMock
             ]
         );
         $objectManagerHelper->setBackwardCompatibleProperty($this->controller, 'state', $this->stateMock);
@@ -212,15 +217,10 @@ class MassEnableTest extends \PHPUnit\Framework\TestCase
             ->with('types')
             ->willReturn([$cacheType]);
 
-        $this->cacheStateMock->expects($this->once())
-            ->method('isEnabled')
-            ->with($cacheType)
-            ->willReturn(false);
-        $this->cacheStateMock->expects($this->once())
+        $this->cacheManagerMock->expects($this->once())
             ->method('setEnabled')
-            ->with($cacheType, true);
-        $this->cacheStateMock->expects($this->once())
-            ->method('persist');
+            ->with([$cacheType], true)
+            ->willReturn([$cacheType]);
 
         $this->messageManagerMock->expects($this->once())
             ->method('addSuccessMessage')
