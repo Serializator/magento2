@@ -17,6 +17,7 @@ use Magento\Backend\Model\View\Result\Redirect;
 use Magento\Framework\App\RequestInterface as Request;
 use Magento\Framework\App\Cache\TypeListInterface as CacheTypeList;
 use Magento\Framework\App\Cache\StateInterface as CacheState;
+use Magento\Framework\App\Cache\Manager as CacheManager;
 
 /**
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
@@ -110,12 +111,18 @@ class MassEnableTest extends \PHPUnit\Framework\TestCase
             ->method('getRequest')
             ->willReturn($this->requestMock);
 
+        $cacheManagerMock = $this->getMockBuilder(CacheManager::class)
+            ->disableOriginalConstructor()
+            ->disableOriginalClone()
+            ->getMock();
+
         $this->controller = $objectManagerHelper->getObject(
             MassEnable::class,
             [
                 'context' => $contextMock,
                 'cacheTypeList' => $this->cacheTypeListMock,
-                'cacheState' => $this->cacheStateMock
+                'cacheState' => $this->cacheStateMock,
+                'cacheManager' => $cacheManagerMock
             ]
         );
         $objectManagerHelper->setBackwardCompatibleProperty($this->controller, 'state', $this->stateMock);

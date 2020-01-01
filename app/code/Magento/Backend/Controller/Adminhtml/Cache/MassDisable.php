@@ -53,20 +53,15 @@ class MassDisable extends \Magento\Backend\Controller\Adminhtml\Cache
     {
         try {
             $types = $this->getRequest()->getParam('types');
-            $updatedTypes = 0;
+
             if (!is_array($types)) {
                 $types = [];
             }
             $this->_validateTypes($types);
-            foreach ($types as $code) {
-                $this->_cacheTypeList->cleanType($code);
-                if ($this->_cacheState->isEnabled($code)) {
-                    $this->_cacheState->setEnabled($code, false);
-                    $updatedTypes++;
-                }
-            }
+
+            $updatedTypes = count($this->cacheManager->setEnabled($types, false));
+
             if ($updatedTypes > 0) {
-                $this->_cacheState->persist();
                 $this->messageManager->addSuccessMessage(__("%1 cache type(s) disabled.", $updatedTypes));
             }
         } catch (LocalizedException $e) {

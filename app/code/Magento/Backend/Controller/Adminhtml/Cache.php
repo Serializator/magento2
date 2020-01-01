@@ -39,24 +39,32 @@ abstract class Cache extends Action
     protected $resultPageFactory;
 
     /**
+     * @var \Magento\Framework\App\Cache\Manager
+     */
+    protected $cacheManager;
+
+    /**
      * @param Action\Context $context
      * @param \Magento\Framework\App\Cache\TypeListInterface $cacheTypeList
      * @param \Magento\Framework\App\Cache\StateInterface $cacheState
      * @param \Magento\Framework\App\Cache\Frontend\Pool $cacheFrontendPool
      * @param \Magento\Framework\View\Result\PageFactory $resultPageFactory
+     * @param \Magento\Framework\App\Cache\Manager $cacheManager
      */
     public function __construct(
         Action\Context $context,
         \Magento\Framework\App\Cache\TypeListInterface $cacheTypeList,
         \Magento\Framework\App\Cache\StateInterface $cacheState,
         \Magento\Framework\App\Cache\Frontend\Pool $cacheFrontendPool,
-        \Magento\Framework\View\Result\PageFactory $resultPageFactory
+        \Magento\Framework\View\Result\PageFactory $resultPageFactory,
+        \Magento\Framework\App\Cache\Manager $cacheManager
     ) {
         parent::__construct($context);
         $this->_cacheTypeList = $cacheTypeList;
         $this->_cacheState = $cacheState;
         $this->_cacheFrontendPool = $cacheFrontendPool;
         $this->resultPageFactory = $resultPageFactory;
+        $this->cacheManager = $cacheManager;
     }
 
     /**

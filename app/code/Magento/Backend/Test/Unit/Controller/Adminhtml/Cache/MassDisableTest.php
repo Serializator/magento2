@@ -17,6 +17,8 @@ use Magento\Backend\Model\View\Result\Redirect;
 use Magento\Framework\App\RequestInterface as Request;
 use Magento\Framework\App\Cache\TypeListInterface as CacheTypeList;
 use Magento\Framework\App\Cache\StateInterface as CacheState;
+use Magento\Framework\App\Cache\Manager as CacheManager;
+use Magento\Framework\App\Cache\Type\FrontendPool;
 
 /**
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
@@ -54,9 +56,9 @@ class MassDisableTest extends \PHPUnit\Framework\TestCase
     private $cacheTypeListMock;
 
     /**
-     * @var CacheState|MockObject
+     * @var CacheManager
      */
-    private $cacheStateMock;
+    private $cacheManagerMock;
 
     protected function setUp()
     {
@@ -76,9 +78,6 @@ class MassDisableTest extends \PHPUnit\Framework\TestCase
         $this->cacheTypeListMock = $this->getMockBuilder(CacheTypeList::class)
             ->getMockForAbstractClass();
 
-        $this->cacheStateMock = $this->getMockBuilder(CacheState::class)
-            ->getMockForAbstractClass();
-
         $this->redirectMock = $this->getMockBuilder(Redirect::class)
             ->disableOriginalConstructor()
             ->disableOriginalClone()
@@ -87,6 +86,12 @@ class MassDisableTest extends \PHPUnit\Framework\TestCase
             ->method('setPath')
             ->with('adminhtml/*')
             ->willReturnSelf();
+
+        $this->cacheManagerMock = $this->getMockBuilder(CacheManager::class)
+            ->disableOriginalConstructor()
+            ->disableOriginalClone()
+            ->getMock();
+
         $resultFactoryMock = $this->getMockBuilder(ResultFactory::class)
             ->disableOriginalConstructor()
             ->disableOriginalClone()
@@ -110,12 +115,16 @@ class MassDisableTest extends \PHPUnit\Framework\TestCase
             ->method('getRequest')
             ->willReturn($this->requestMock);
 
+        $cacheStateMock = $this->getMockBuilder(CacheState::class)
+            ->getMockForAbstractClass();
+
         $this->controller = $objectManagerHelper->getObject(
             MassDisable::class,
             [
                 'context' => $contextMock,
                 'cacheTypeList' => $this->cacheTypeListMock,
-                'cacheState' => $this->cacheStateMock
+                'cacheState' => $cacheStateMock,
+                'cacheManager' => $this->cacheManagerMock
             ]
         );
         $objectManagerHelper->setBackwardCompatibleProperty($this->controller, 'state', $this->stateMock);
@@ -205,15 +214,10 @@ class MassDisableTest extends \PHPUnit\Framework\TestCase
             ->with('types')
             ->willReturn([$cacheType]);
 
-        $this->cacheStateMock->expects($this->once())
-            ->method('isEnabled')
-            ->with($cacheType)
-            ->willReturn(true);
-        $this->cacheStateMock->expects($this->once())
+        $this->cacheManagerMock->expects($this->once())
             ->method('setEnabled')
-            ->with($cacheType, false);
-        $this->cacheStateMock->expects($this->once())
-            ->method('persist');
+            ->with([$cacheType], false)
+            ->willReturn([$cacheType]);
 
         $this->messageManagerMock->expects($this->once())
             ->method('addSuccessMessage')
